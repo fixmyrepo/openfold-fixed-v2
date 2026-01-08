@@ -1,13 +1,13 @@
 {
-  "prediction_cmd": "python run_pretrained_openfold.py {input_fasta} {template_mmcif_dir} --output_dir {output_dir} --model_device {model_device} --config_preset {config_preset} --jax_param_path {jax_param_path} --openfold_checkpoint_path {openfold_checkpoint_path}",
+  "prediction_cmd": "python run_pretrained_openfold.py {fasta_dir} {template_mmcif_dir} --output_dir {output_dir} --model_device {model_device} --config_preset {config_preset} --jax_param_path {jax_param_path} --openfold_checkpoint_path {openfold_checkpoint_path}",
   "inputs": [
     {
-      "name": "input_fasta",
+      "name": "fasta_dir",
       "flag": "",
-      "description": "Path to input FASTA file",
-      "extension": ".fasta",
+      "description": "Path to directory containing FASTA files",
+      "extension": "",
       "required": true,
-      "remote_path": "/root/input.fasta"
+      "remote_path": "/root/fasta_dir"
     },
     {
       "name": "template_mmcif_dir",
@@ -153,17 +153,50 @@
   "docker_image": null,
   "docker_working_dir": null,
   "gpu_required": true,
-  "setup_method": "conda_env_yaml",
-  "environment_file": "environment.yml",
-  "repo_install_cmd": null,
+  "setup_method": "conda_requirements",
+  "environment_file": null,
+  "repo_install_cmd": "bash scripts/install_third_party_dependencies.sh && micromamba run -n openfold-env python setup.py install",
   "checkpoint_download_cmd": "bash scripts/download_openfold_params.sh openfold/resources",
   "special_pip_commands": [
     "pip install deepspeed==0.14.5 --no-build-isolation",
     "pip install flash-attn --no-build-isolation"
   ],
-  "conda_packages": [],
-  "pip_packages": [],
-  "conda_channels": "",
+  "conda_packages": [
+    "cuda",
+    "gcc=12.4",
+    "python=3.10",
+    "setuptools=59.5.0",
+    "pip",
+    "openmm",
+    "pdbfixer",
+    "pytorch-lightning",
+    "biopython",
+    "numpy",
+    "pandas",
+    "PyYAML",
+    "requests",
+    "scipy",
+    "tqdm",
+    "typing-extensions",
+    "wandb",
+    "modelcif==0.7",
+    "awscli",
+    "ml-collections",
+    "aria2",
+    "mkl",
+    "git",
+    "bioconda::hmmer",
+    "bioconda::hhsuite",
+    "bioconda::kalign2",
+    "pytorch::pytorch=2.5",
+    "pytorch::pytorch-cuda=12.4"
+  ],
+  "pip_packages": [
+    "dm-tree==0.1.6",
+    "git+https://github.com/NVIDIA/dllogger.git",
+    "cuda-python"
+  ],
+  "conda_channels": "conda-forge bioconda pytorch nvidia",
   "conda_protected": [
     "torch",
     "numpy",
@@ -173,8 +206,8 @@
   ],
   "environment_variables": {
     "MAMBA_ROOT_PREFIX": "/opt/conda",
-    "PATH": "/opt/conda/envs/openfold-autonomous/bin:/opt/conda/bin:/root/.local/bin:$PATH",
-    "LD_LIBRARY_PATH": "/opt/conda/envs/openfold-autonomous/lib:$LD_LIBRARY_PATH"
+    "PATH": "/opt/conda/envs/openfold-env/bin:/opt/conda/bin:/root/.local/bin:$PATH",
+    "LD_LIBRARY_PATH": "/opt/conda/envs/openfold-env/lib:$LD_LIBRARY_PATH"
   },
   "gpu_type": "A10G",
   "notes": "OpenFold requires conda environment setup from environment.yml, followed by running scripts/install_third_party_dependencies.sh which downloads stereo_chemical_props.txt, decompresses test data, runs python setup.py install to compile CUDA kernels, clones CUTLASS v3.6.0, and sets environment variables. Model weights must be downloaded separately using provided scripts (AlphaFold params, OpenFold params, or SoloSeq params). The setup.py compiles custom CUDA attention kernels that require CUDA 12.1+. Environment uses PyTorch 2.5 with CUDA 12.4, includes bioinformatics tools (hmmer, hhsuite, kalign2), and pip packages (deepspeed, flash-attn, dllogger from git). Supports FlashAttention and DeepSpeed DS4Sci_EvoformerAttention kernel for memory-efficient training/inference. Can handle sequences with 4000+ residues on A100. While a Dockerfile exists for local building, no pre-built Docker image is published to any registry.",
@@ -183,7 +216,13 @@
     "*.yaml",
     "*.toml"
   ],
-  "example_inputs": {},
+  "example_inputs": {
+    "fasta_dir": "examples/monomer/fasta_dir",
+    "template_mmcif_dir": "tests/test_data/mmcifs/",
+    "output_dir": "/root/output/",
+    "model_device": "cuda:0",
+    "config_preset": "model_1"
+  },
   "checkpoint_names": [],
   "default_checkpoint": null,
   "checkpoint_url": null,
