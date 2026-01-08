@@ -1,0 +1,215 @@
+{
+  "prediction_cmd": "python run_pretrained_openfold.py {input_fasta} {template_mmcif_dir} --output_dir {output_dir} --model_device {model_device} --config_preset {config_preset} --jax_param_path {jax_param_path} --openfold_checkpoint_path {openfold_checkpoint_path}",
+  "inputs": [
+    {
+      "name": "input_fasta",
+      "flag": "",
+      "description": "Path to input FASTA file",
+      "extension": ".fasta",
+      "required": true,
+      "remote_path": "/root/input.fasta"
+    },
+    {
+      "name": "template_mmcif_dir",
+      "flag": "",
+      "description": "Path to directory containing template mmCIF structures",
+      "extension": "",
+      "required": true,
+      "remote_path": "/root/templates/"
+    },
+    {
+      "name": "output_dir",
+      "flag": "--output_dir",
+      "description": "Output directory for predictions",
+      "extension": "",
+      "required": true,
+      "remote_path": "/root/output/"
+    },
+    {
+      "name": "model_device",
+      "flag": "--model_device",
+      "description": "Device to run model on (cuda:0 or cpu)",
+      "extension": "",
+      "required": false,
+      "remote_path": null
+    },
+    {
+      "name": "config_preset",
+      "flag": "--config_preset",
+      "description": "Config preset (model_1, model_2, etc.)",
+      "extension": "",
+      "required": false,
+      "remote_path": null
+    },
+    {
+      "name": "jax_param_path",
+      "flag": "--jax_param_path",
+      "description": "Path to JAX parameters",
+      "extension": "",
+      "required": false,
+      "remote_path": null
+    },
+    {
+      "name": "openfold_checkpoint_path",
+      "flag": "--openfold_checkpoint_path",
+      "description": "Path to OpenFold checkpoint",
+      "extension": ".pt",
+      "required": false,
+      "remote_path": null
+    },
+    {
+      "name": "uniref90_database_path",
+      "flag": "--uniref90_database_path",
+      "description": "Path to UniRef90 database",
+      "extension": "",
+      "required": false,
+      "remote_path": null
+    },
+    {
+      "name": "mgnify_database_path",
+      "flag": "--mgnify_database_path",
+      "description": "Path to MGnify database",
+      "extension": "",
+      "required": false,
+      "remote_path": null
+    },
+    {
+      "name": "pdb70_database_path",
+      "flag": "--pdb70_database_path",
+      "description": "Path to PDB70 database",
+      "extension": "",
+      "required": false,
+      "remote_path": null
+    },
+    {
+      "name": "uniclust30_database_path",
+      "flag": "--uniclust30_database_path",
+      "description": "Path to UniClust30 database",
+      "extension": "",
+      "required": false,
+      "remote_path": null
+    },
+    {
+      "name": "bfd_database_path",
+      "flag": "--bfd_database_path",
+      "description": "Path to BFD database",
+      "extension": "",
+      "required": false,
+      "remote_path": null
+    },
+    {
+      "name": "jackhmmer_binary_path",
+      "flag": "--jackhmmer_binary_path",
+      "description": "Path to jackhmmer binary",
+      "extension": "",
+      "required": false,
+      "remote_path": null
+    },
+    {
+      "name": "hhblits_binary_path",
+      "flag": "--hhblits_binary_path",
+      "description": "Path to hhblits binary",
+      "extension": "",
+      "required": false,
+      "remote_path": null
+    },
+    {
+      "name": "hhsearch_binary_path",
+      "flag": "--hhsearch_binary_path",
+      "description": "Path to hhsearch binary",
+      "extension": "",
+      "required": false,
+      "remote_path": null
+    },
+    {
+      "name": "kalign_binary_path",
+      "flag": "--kalign_binary_path",
+      "description": "Path to kalign binary",
+      "extension": "",
+      "required": false,
+      "remote_path": null
+    }
+  ],
+  "outputs": [
+    {
+      "name": "predictions",
+      "description": "Predicted protein structure files",
+      "extension": ".pdb",
+      "remote_path": "/root/output/"
+    },
+    {
+      "name": "alignments",
+      "description": "Multiple sequence alignment files",
+      "extension": ".a3m",
+      "remote_path": "/root/output/alignments/"
+    },
+    {
+      "name": "timings",
+      "description": "Timing information",
+      "extension": ".json",
+      "remote_path": "/root/output/timings/"
+    }
+  ],
+  "docker_image": null,
+  "docker_working_dir": null,
+  "gpu_required": true,
+  "setup_method": "conda_env_yaml",
+  "environment_file": "environment.yml",
+  "repo_install_cmd": null,
+  "checkpoint_download_cmd": "bash scripts/download_openfold_params.sh openfold/resources",
+  "special_pip_commands": [
+    "pip install deepspeed==0.14.5 --no-build-isolation",
+    "pip install flash-attn --no-build-isolation"
+  ],
+  "conda_packages": [],
+  "pip_packages": [],
+  "conda_channels": "",
+  "conda_protected": [
+    "torch",
+    "numpy",
+    "scipy",
+    "pandas",
+    "biopython"
+  ],
+  "environment_variables": {
+    "MAMBA_ROOT_PREFIX": "/opt/conda",
+    "PATH": "/opt/conda/envs/openfold-autonomous/bin:/opt/conda/bin:/root/.local/bin:$PATH",
+    "LD_LIBRARY_PATH": "/opt/conda/envs/openfold-autonomous/lib:$LD_LIBRARY_PATH"
+  },
+  "gpu_type": "A10G",
+  "notes": "OpenFold requires conda environment setup from environment.yml, followed by running scripts/install_third_party_dependencies.sh which downloads stereo_chemical_props.txt, decompresses test data, runs python setup.py install to compile CUDA kernels, clones CUTLASS v3.6.0, and sets environment variables. Model weights must be downloaded separately using provided scripts (AlphaFold params, OpenFold params, or SoloSeq params). The setup.py compiles custom CUDA attention kernels that require CUDA 12.1+. Environment uses PyTorch 2.5 with CUDA 12.4, includes bioinformatics tools (hmmer, hhsuite, kalign2), and pip packages (deepspeed, flash-attn, dllogger from git). Supports FlashAttention and DeepSpeed DS4Sci_EvoformerAttention kernel for memory-efficient training/inference. Can handle sequences with 4000+ residues on A100. While a Dockerfile exists for local building, no pre-built Docker image is published to any registry.",
+  "sync_patterns": [
+    "**/*.py",
+    "*.yaml",
+    "*.toml"
+  ],
+  "example_inputs": {},
+  "checkpoint_names": [],
+  "default_checkpoint": null,
+  "checkpoint_url": null,
+  "script_path": null,
+  "_fallbacks": {
+    "fallbacks_used": [
+      "phase2_extraction",
+      "env_yaml_build_isolation_fix",
+      "fields_defaulted"
+    ],
+    "warnings": [
+      "phase2_extraction: Phase 1 exploration failed to produce JSON; Phase 2 forced extraction succeeded",
+      "env_yaml_build_isolation_fix: Parsed environment.yml: found ['deepspeed==0.14.5', 'flash-attn'] in pip section that need --no-build-isolation (added to special_pip_commands, these packages import torch during build)",
+      "fields_defaulted: These fields were not found by analysis and defaulted: sync_patterns, example_inputs, checkpoint_names, default_checkpoint, checkpoint_url, script_path"
+    ]
+  },
+  "_fallback_info": {
+    "fallbacks_used": [
+      "phase2_extraction",
+      "env_yaml_build_isolation_fix",
+      "fields_defaulted"
+    ],
+    "warnings": [
+      "phase2_extraction: Phase 1 exploration failed to produce JSON; Phase 2 forced extraction succeeded",
+      "env_yaml_build_isolation_fix: Parsed environment.yml: found ['deepspeed==0.14.5', 'flash-attn'] in pip section that need --no-build-isolation (added to special_pip_commands, these packages import torch during build)",
+      "fields_defaulted: These fields were not found by analysis and defaulted: sync_patterns, example_inputs, checkpoint_names, default_checkpoint, checkpoint_url, script_path"
+    ]
+  }
+}
