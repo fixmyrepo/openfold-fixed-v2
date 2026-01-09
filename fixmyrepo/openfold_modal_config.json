@@ -20,10 +20,12 @@
     {
       "name": "output_dir",
       "flag": "--output_dir",
+      "input_type": "directory",
       "description": "Output directory for predictions",
       "extension": "",
       "required": true,
-      "remote_path": "/root/output/"
+      "remote_path": "/root/output/",
+      "is_output": true
     },
     {
       "name": "model_device",
@@ -219,7 +221,6 @@
   "example_inputs": {
     "fasta_dir": "examples/monomer/fasta_dir",
     "template_mmcif_dir": "tests/test_data/mmcifs/",
-    "output_dir": "/root/output/",
     "model_device": "cuda:0",
     "config_preset": "model_1"
   },
