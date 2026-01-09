@@ -194,7 +194,7 @@
   "pip_packages": [
     "dm-tree==0.1.6",
     "git+https://github.com/NVIDIA/dllogger.git",
-    "cuda-python"
+    "cuda-python==12.4.0"
   ],
   "conda_channels": "conda-forge bioconda pytorch nvidia",
   "conda_protected": [

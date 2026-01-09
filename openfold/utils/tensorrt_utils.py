@@ -18,7 +18,12 @@ import os
 
 import torch
 
-from .tensorrt_lazy_compiler import trt_compile
+try:
+    from .tensorrt_lazy_compiler import trt_compile
+    _TRT_AVAILABLE = True
+except (ImportError, ModuleNotFoundError):
+    _TRT_AVAILABLE = False
+    trt_compile = None
 
 logger = logging.getLogger("trt_compile")
 logger.setLevel(level=logging.INFO)
@@ -27,6 +32,9 @@ logger.setLevel(level=logging.INFO)
 def instrument_with_trt_compile(model, config):
     if config.trt.mode is None:
         return
+
+    if not _TRT_AVAILABLE:
+        raise ImportError("TensorRT support is not available. Install tensorrt and cuda-python to use TensorRT mode.")
 
     if (
         config.globals.use_cuequivariance_attention
